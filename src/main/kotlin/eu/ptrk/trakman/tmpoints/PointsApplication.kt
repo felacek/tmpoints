@@ -9,4 +9,3 @@ class PointsApplication
 fun main(args: Array<String>) {
     runApplication<PointsApplication>(*args)
 }
-

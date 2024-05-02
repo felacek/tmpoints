@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.server.ResponseStatusException
 
 @Controller
@@ -51,6 +52,17 @@ class AdminController(private val adminService: AdminService, private val questS
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Disabled")
         } catch (e: BadCredentialsException) {
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Bad credentials")
+        }
+    }
+
+    @PostMapping("/daily")
+    @PreAuthorize("hasRole('ADMIN')")
+    fun daily(): ResponseEntity<Unit> {
+        try {
+            playerService.daily()
+            return ResponseEntity.ok(Unit)
+        } catch (e: Exception) {
+            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.message)
         }
     }
 

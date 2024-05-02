@@ -1,7 +1,10 @@
 package eu.ptrk.trakman.tmpoints.services
 
 import eu.ptrk.trakman.tmpoints.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
@@ -16,11 +19,6 @@ class PlayerService(
 
     fun getPlayer(login: String): Player {
         val player = playerRepository.getPlayerByLogin(login) ?: throw IllegalArgumentException("Player with login $login does not exist")
-        return player
-    }
-
-    fun getPlayer(id: Int): Player {
-        val player = playerRepository.getPlayerById(id) ?: throw IllegalArgumentException("Player with id $id does not exist")
         return player
     }
 
@@ -65,15 +63,19 @@ class PlayerService(
             throw IllegalArgumentException("Quest ${playerQuest.quest.name} has no player assigned")
         if ((playerQuest.quest.server?.login ?: server) != server)
             throw IllegalArgumentException("Quest ${playerQuest.quest.name} is assigned to a different server")
-        if (playerQuest.completed)
+        if (playerQuest.completed())
             throw IllegalArgumentException("Player ${playerQuest.player.id} has already completed quest ${playerQuest.quest.name}")
         if (playerQuest.expires.isBefore(LocalDate.now()))
             throw IllegalArgumentException("Quest ${playerQuest.quest.name} has expired for player ${playerQuest.player.id}")
-        playerQuest.completed = true
-        playerQuest.player.points += playerQuest.quest.reward
+        // Quest completed
+        if (!playerQuest.player.completedQuestToday) {
+            playerQuest.player.completedQuestToday = true
+            playerQuest.player.streak++
+            playerQuest.player.points += playerQuest.player.streak * 100
+        }
+        if(--playerQuest.remaining == 0)
+            playerQuest.player.points += playerQuest.quest.reward
         playerQuestRepository.save(playerQuest)
-        // TODO: add three quests daily
-        fillQuests(playerQuest.player)
         return playerQuest.quest
     }
 
@@ -83,6 +85,17 @@ class PlayerService(
             it.currentMapFinishes = 0
         }
         playerRepository.saveAll(players)
+    }
+
+    fun daily() {
+        playerQuestRepository.removePlayerQuestsByExpiresBefore()
+        val lostStreaks = playerRepository.getPlayersByCompletedQuestToday(false).toSet()
+        playerRepository.saveAll(playerRepository.findAll().map {
+            if (lostStreaks.contains(it)) it.streak = 0
+            else it.completedQuestToday = false
+            fillQuests(it)
+            it
+        })
     }
 
     fun getPlayers(): Set<Player> {
@@ -98,7 +111,7 @@ class PlayerService(
         val toAdd = questService.generateQuests(player.id, maxQuests, player.points)
         if (toAdd.isEmpty()) return listOf()
         val playerQuests = toAdd.map {
-            PlayerQuest(it, false, LocalDate.now().plusDays(expireInDays), player)
+            PlayerQuest(it, 1, LocalDate.now().plusDays(expireInDays), player)
         }
         playerQuestRepository.saveAll(playerQuests)
         return playerQuests

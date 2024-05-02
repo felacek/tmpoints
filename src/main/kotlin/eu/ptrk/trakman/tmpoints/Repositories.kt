@@ -15,6 +15,7 @@ interface PlayerQuestRepository: CrudRepository<PlayerQuest, Int> {
     @Query("select p.quest.id from PlayerQuest p where p.expires > ?2 and p.player.id = ?1")
     fun getInvalidQuestsByPlayer(id: Int, date: LocalDate = LocalDate.now()): Set<Int>
 
+    fun removePlayerQuestsByExpiresBefore(date: LocalDate = LocalDate.now())
     fun getPlayerQuestsByPlayerId(id: Int): Set<PlayerQuest>
     fun getPlayerQuestsByPlayerLoginIn(logins: Set<String>): Set<PlayerQuest>
     fun getPlayerQuestByPlayerIdAndQuestId(player: Int, quest: Int): PlayerQuest?
@@ -22,9 +23,7 @@ interface PlayerQuestRepository: CrudRepository<PlayerQuest, Int> {
 
 interface PlayerRepository: CrudRepository<Player, Int> {
     fun getPlayerByLogin(login: String): Player?
-    fun getPlayerById(id: Int): Player?
-    //@Query("select p.login, p.points, q, p.id from Player p join PlayerQuest q on p.id = q.player.id where p.login in (?1)")
-    fun getPlayersByLoginIn(logins: Set<String>): Set<Player>
+    fun getPlayersByCompletedQuestToday(completed: Boolean): ArrayList<Player>
 }
 
 interface ServerRepository: CrudRepository<Server, Int> {

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark" />
+    <link rel="stylesheet" href="../static/points/pico.jade.min.css" th:href="@{/points/pico.jade.min.css}" />
+    <script type="text/javascript" src="../static/points/main.js" th:src="@{/points/main.js}" defer></script>
+    <title>Register</title>
+</head>
+<body>
+<header>
+    <div class="container">
+    <nav>
+        <ul>
+                <a aria-label="TMPoints homepage" href="/points"><h2>TMPoints</h2></a>
+        </ul>
+        <ul>
+            <li><a href="https://github.com/felacek/tmpoints">GitHub</a></li>
+            <li><a href="/">Trakman</a></li>
+            <li><a href="/admin">Admin page</a></li>
+        </ul>
+    </nav>
+    </div>
+</header>
+<main class="container grid">
+    <div role="document" class="container">
+    <h1>Register a server with TMPoints</h1>
+    <section>
+        <p>
+            To register a server, you need to prove it belongs to you. In the form below, you need to enter the login of your server,
+            specify your new TMPoints password (<b>NOT</b> your server password!), which you will use when authenticating with the API.
+        </p>
+        <p>
+            After clicking on the <i>Verify and register</i> button, you will be taken to the Trackmania login screen, where you should
+            enter the login and password of <b>the server</b>, i.e. the values in your player page or the info you used when registering
+            a nations account.
+        </p>
+        <p>
+            Then you need to grant TMPoints permission to access your account information (to load that page, you need to enable TLS 1.0
+            in your browser - you can disable it again after registering). This information will only be used <b>once</b> to verify
+            that the server login belongs to you; the access token is instantly discarded and never used again. If everything went right,
+            you are now registered and can start making API calls to TMPoints. <b>Congratulations!</b>
+        </p>
+        <p>
+            If something went wrong and you are sure it's not your fault, report it to the TMPoints bug tracker.
+            If you registered with a player account (not a server one), you can go to your
+            <a href="http://home.trackmania.com/authorizations">authorised applications</a> and revoke the permission.
+            Server accounts cannot do this, but the API does not allow anyone to actually see any server info with the token.
+        </p>
+    </section>
+    </div>
+    <section id="register">
+        <fieldset>
+            <label>
+                Server login
+                <input id="login" name="login" placeholder="Server login" aria-label="Server login"/>
+            </label>
+            <label>
+                TMPoints password
+                <input id="password" name="password" placeholder="NOT the server's password" type="password" aria-label="Password" />
+            </label>
+        </fieldset>
+        <div class="grid">
+            <button id="submit" style="max-height: 5em">Verify and register</button>
+            <p id="info"></p>
+        </div>
+        </section>
+</main>
+</body>
+</html>

@@ -2,6 +2,7 @@ package eu.ptrk.trakman.tmpoints
 
 import jakarta.persistence.*
 import java.time.LocalDate
+import kotlin.jvm.Transient
 
 enum class QuestType {
     FINISHES, AUTHOR, LOCAL, DEDI, MISC // TODO: time on a specific map
@@ -16,6 +17,7 @@ data class Quest(
     val goal: Int = 0,
     val reward: Int,
     val minPoints: Int = 0,
+    val amount: Int = 1,
     @OneToOne var server: Server? = null,
     @Id @GeneratedValue val id: Int? = null
 )
@@ -24,11 +26,13 @@ data class Quest(
 @Table(name = "playerquests")
 data class PlayerQuest(
     @ManyToOne val quest: Quest,
-    var completed: Boolean,
+    var remaining: Int = quest.amount,
     val expires: LocalDate,
     @ManyToOne(fetch = FetchType.LAZY) val player: Player? = null,
     @Id @GeneratedValue val id: Int? = null
-)
+) {
+    fun completed(): Boolean = remaining <= 0
+}
 
 @Entity
 @Table(name = "players")
@@ -38,6 +42,8 @@ data class Player(
     @OneToMany @JoinColumn(name = "player_id", referencedColumnName = "id", unique = true) var quests: MutableSet<PlayerQuest>,
     var currentMapFinishes: Int = 0,
     var currentMapTime: Int = 0,
+    var streak: Int = 0,
+    var completedQuestToday: Boolean = false,
     @Id @GeneratedValue val id: Int? = null
 )
 

@@ -2,6 +2,7 @@ package eu.ptrk.trakman.tmpoints.services
 
 import eu.ptrk.trakman.tmpoints.*
 import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -11,23 +12,26 @@ class ServerService(private val serverRepository: ServerRepository,
                     private val playerService: PlayerService,
                     private val questService: QuestService,
                     private val encoder: PasswordEncoder,
-                    private val authenticationManager: AuthenticationManager) {
+                    private val authenticationManager: AuthenticationManager,
+) {
 
-    fun addServer(login: String, password: String, currentMapUid: String,
-                  currentMapAuthorTime: Int, playerLogins: Set<String>): Map<Player, Set<PlayerQuest>> {
+    fun register(login: String, password: String) {
         val exists = serverRepository.getServerByLogin(login)
-        if (exists != null) {
-            val authenticationRequest = UsernamePasswordAuthenticationToken.unauthenticated(login, password)
-            authenticationManager.authenticate(authenticationRequest)
-            exists.online = true
-            val ret = playerService.getOrAddPlayers(playerLogins)
-            exists.players.addAll(ret.keys)
-            newMap(exists, currentMapUid, currentMapAuthorTime)
-            return ret
-        }
+        if (exists != null) throw IllegalArgumentException("Server with login $login has already been registered")
         if (login.length > 40) throw IllegalArgumentException("Login cannot exceed 40 characters")
+        serverRepository.save(Server(login, encoder.encode(password), false, "", 0, mutableSetOf()))
+    }
+
+    fun addServer(login: String, password: String, currentMapUid: String, currentMapAuthorTime: Int,
+                  playerLogins: Set<String>): Map<Player, Set<PlayerQuest>> {
+        val server = serverRepository.getServerByLogin(login) ?: throw BadCredentialsException("Bad credentials.")
+        val authenticationRequest = UsernamePasswordAuthenticationToken.unauthenticated(login, password)
+        authenticationManager.authenticate(authenticationRequest)
+        server.online = true
         val ret = playerService.getOrAddPlayers(playerLogins)
-        serverRepository.save(Server(login, encoder.encode(password), true, currentMapUid, currentMapAuthorTime, ret.keys.toMutableSet()))
+        server.players.addAll(ret.keys)
+        newMap(server, currentMapUid, currentMapAuthorTime)
+        serverRepository.save(server)
         return ret
     }
 
@@ -70,7 +74,7 @@ class ServerService(private val serverRepository: ServerRepository,
         if (impr) player.currentMapTime = time
         val completed: MutableSet<Quest> = mutableSetOf()
         questService.getQuests(player.id ?: throw IllegalArgumentException("Player $login has no id")).forEach {
-            if (it.completed) return@forEach
+            if (it.completed()) return@forEach
             if ((it.quest.server?.login ?: login) != login) return@forEach
             if (it.quest.type == QuestType.FINISHES && it.quest.goal <= player.currentMapFinishes) {
                 try { completed.add(playerService.completeQuest(it)) } catch (_: IllegalArgumentException) {}
@@ -87,9 +91,9 @@ class ServerService(private val serverRepository: ServerRepository,
             } catch (_: IllegalArgumentException) {}
         }
         // player completed all assigned quests
-        // TODO: streaks
         if (completed.isNotEmpty() && completed.size == playerService.maxQuests) player.points += 100
-        return FinishedResponse(PlayerResponse(playerService.save(player), questService.getQuests(player.id)), completed)
+        val questResponses = completed.map { QuestResponse(it, 0) }.toSet()
+        return FinishedResponse(PlayerResponse(playerService.save(player), questService.getQuests(player.id)), questResponses)
     }
 
     fun playerCompletedMiscQuest(login: String, playerLogin: String, id: Int): FinishedResponse {
@@ -97,13 +101,16 @@ class ServerService(private val serverRepository: ServerRepository,
         val player = getPlayer(server, playerLogin)
         if (player.id == null) throw IllegalArgumentException("Player $login has no id")
         val completed = playerService.completeQuest(playerLogin, id, login, true)
-        return FinishedResponse(PlayerResponse(playerService.save(player), questService.getQuests(player.id)), setOf(completed))
+        return FinishedResponse(
+            PlayerResponse(playerService.save(player), questService.getQuests(player.id)),
+            setOf(QuestResponse(completed, 0))
+        )
     }
 
     fun getServers(): Set<Server> = serverRepository.findAll().toSet()
 
     fun getServer(login: String): Server = serverRepository.getServerByLogin(login) ?:
-    throw IllegalArgumentException("Server with login $login does not exist, I don't think this is supposed to happen...")
+    throw IllegalArgumentException("Server with login $login does not exist, make sure you are using the correct token")
 
     private fun getPlayer(server: Server, login: String): Player = server.players.find { it.login == login } ?:
     throw IllegalArgumentException("Player $login is not on the server ${server.login}")

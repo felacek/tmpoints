@@ -49,7 +49,14 @@ class SecurityConfig(
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http.authorizeHttpRequests {
-            it.requestMatchers(HttpMethod.POST, "/server/login").permitAll()
+            it.requestMatchers(HttpMethod.POST, "/points/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/points/register").permitAll()
+                .requestMatchers(HttpMethod.GET, "/points/register").permitAll()
+                .requestMatchers(HttpMethod.GET, "/points/register/finish").permitAll()
+                .requestMatchers(HttpMethod.GET, "/points/foobar").permitAll()
+                .requestMatchers(HttpMethod.GET, "/points/pico.jade.min.css").permitAll()
+                .requestMatchers(HttpMethod.GET, "/points/main.js").permitAll()
+                .requestMatchers(HttpMethod.GET, "/points").permitAll()
                 .requestMatchers(HttpMethod.POST, "/admin/register").permitAll()
                 .requestMatchers(HttpMethod.POST, "/admin/login").permitAll()
                 .anyRequest().authenticated()
