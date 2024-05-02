@@ -2,7 +2,6 @@ package eu.ptrk.trakman.tmpoints
 
 import jakarta.persistence.*
 import java.time.LocalDate
-import kotlin.jvm.Transient
 
 enum class QuestType {
     FINISHES, AUTHOR, LOCAL, DEDI, MISC // TODO: time on a specific map

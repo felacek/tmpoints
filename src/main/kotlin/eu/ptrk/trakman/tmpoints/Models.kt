@@ -88,10 +88,4 @@ data class TMOAuthTokenResponse(
     val login: String
 )
 
-data class TMServersResponse(
-    val login: String,
-    val name: String,
-    val path: String
-)
-
 data class TokenResponse(val token: String)

@@ -1,10 +1,7 @@
 package eu.ptrk.trakman.tmpoints.services
 
 import eu.ptrk.trakman.tmpoints.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
