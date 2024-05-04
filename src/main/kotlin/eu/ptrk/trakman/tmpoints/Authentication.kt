@@ -59,6 +59,7 @@ class SecurityConfig(
                 .requestMatchers(HttpMethod.GET, "/points").permitAll()
                 .requestMatchers(HttpMethod.POST, "/admin/register").permitAll()
                 .requestMatchers(HttpMethod.POST, "/admin/login").permitAll()
+                .requestMatchers(HttpMethod.GET, "/admin").permitAll()
                 .anyRequest().authenticated()
         }//.httpBasic(Customizer.withDefaults())
 

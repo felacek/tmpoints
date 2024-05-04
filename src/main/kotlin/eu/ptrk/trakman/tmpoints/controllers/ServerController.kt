@@ -2,7 +2,6 @@ package eu.ptrk.trakman.tmpoints.controllers
 
 import eu.ptrk.trakman.tmpoints.*
 import eu.ptrk.trakman.tmpoints.services.ServerService
-import jakarta.servlet.http.HttpServletResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
@@ -40,20 +39,22 @@ class ServerController(
     private val states: MutableMap<String, ServerRegisterRequest> = mutableMapOf()
     private val authorizeUrl = "https://ws.trackmania.com/oauth2/authorize/"
     private val tokenUrl = "https://ws.trackmania.com/oauth2/token/"
-    private val responseUrl = "https://players.trackmaniaforever.com"
+
+    @GetMapping(path = ["", "/"])
+    fun homePage(model: Model): String {
+        return "homepage"
+    }
 
     @GetMapping("/foobar")
-    fun default(): ResponseEntity<TokenResponse> {
+    fun foobar(): ResponseEntity<TokenResponse> {
         return ResponseEntity.ok(TokenResponse("fak u"))
     }
 
     @GetMapping("/register")
-    fun registerPage(model: Model, response: HttpServletResponse): String {
-        response.addHeader("Access-Control-Allow-Origin", responseUrl)
+    fun registerPage(model: Model): String {
         return "register"
     }
 
-    @CrossOrigin
     @PostMapping("/register")
     suspend fun getTMLogin(@RequestBody request: ServerRegisterRequest): ResponseEntity<TokenResponse> {
         val state = UUID.randomUUID().toString().take(20)
@@ -66,7 +67,7 @@ class ServerController(
         val response = client.get().uri(url).retrieve().awaitBodilessEntity() ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "$authorizeUrl did not respond")
         if (response.statusCode != HttpStatus.FOUND || response.headers.location == null)
             throw ResponseStatusException(HttpStatus.BAD_GATEWAY, "$authorizeUrl returned code ${response.statusCode}")
-        return ResponseEntity.ok(TokenResponse(response.headers.location.toString()))
+        return ResponseEntity.ok(TokenResponse("", response.headers.location.toString()))
     }
 
     @GetMapping("/register/finish")

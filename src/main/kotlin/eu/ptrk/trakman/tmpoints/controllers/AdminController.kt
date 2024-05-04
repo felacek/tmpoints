@@ -12,23 +12,32 @@ import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.DisabledException
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.ui.Model
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 
 @Controller
 @RequestMapping("/admin")
-class AdminController(private val adminService: AdminService, private val questService: QuestService, private val tokenService: TokenService, private val playerService: PlayerService, private val serverService: ServerService) {
+class AdminController(
+    private val adminService: AdminService,
+    private val questService: QuestService,
+    private val tokenService: TokenService,
+    private val playerService: PlayerService,
+    private val serverService: ServerService,
+) {
+
+    @GetMapping(path = ["", "/"])
+    fun loginPage(authentication: Authentication?, model: Model): String {
+        if (authentication == null || !authentication.isAuthenticated ||
+            !authentication.authorities.mapNotNull {it.authority}.contains("ADMIN")) return "adminlogin"
+        return "admin"
+    }
 
     @PostMapping("/login")
     fun login(@RequestBody request: AdminLoginRequest): ResponseEntity<TokenResponse> {
         try {
             val token = tokenService.createAdminToken(adminService.login(request.login, request.password))
-            return ResponseEntity.ok(TokenResponse(token))
+            return ResponseEntity.ok(TokenResponse(token, "/admin"))
         } catch (e: IllegalArgumentException) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
         } catch (e: DisabledException) {

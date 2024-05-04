@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark" />
+    <link rel="stylesheet" href="../static/points/pico.jade.min.css" th:href="@{/points/pico.jade.min.css}" />
+    <script type="text/javascript" src="../static/points/main.js" th:src="@{/points/main.js}" defer></script>
+    <title>TMPoints</title>
+</head>
+<body>
+<header>
+    <div class="container">
+        <nav>
+            <ul>
+                <li><a aria-label="TMPoints homepage" href="/points"><h2>TMPoints</h2></a></li>
+            </ul>
+            <ul>
+                <li><a data-tooltip="Register your server with TMPoints" data-placement="bottom" href="/points/register">Register</a></li>
+                <li><a data-tooltip="Follow updates, report issues or server misconduct" data-placement="bottom" href="https://github.com/felacek/tmpoints">GitHub</a></li>
+                <li><a data-tooltip="Check out Trakman - a modern Trackmania Forever server controller" data-placement="bottom" href="/">Trakman</a></li>
+                <li><a href="/admin">Admin page</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+<main class="container grid">
+
+</main>
+</body>
+</html>
