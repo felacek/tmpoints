@@ -4,7 +4,7 @@ import jakarta.persistence.*
 import java.time.LocalDate
 
 enum class QuestType {
-    FINISHES, AUTHOR, LOCAL, DEDI, MISC // TODO: time on a specific map
+    FINISHES, AUTHOR, LOCAL, DEDI, MISC
 }
 
 @Entity

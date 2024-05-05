@@ -33,9 +33,8 @@ async function renderPage(token = "") {
     }
   })
   if (page.status !== 200) {
-    console.log(await page.text())
-    console.log(await page.json())
-    return await onError(await page.text())
+    const error = await page.text()
+    return await onError(error === "" ? "An error occurred" : error)
   }
   document.querySelector("html").innerHTML = await page.text()
 }
@@ -56,7 +55,8 @@ button.onclick = async () =>  {
     })}
   const response = await fetch(button.name, body)
   if (response.status !== 200) {
-    return await onError(await response.text())
+    const error = await response.text()
+    return await onError(error === "" ? "An error occurred" : error)
   }
   const json = await response.json()
   if (json["token"] === null || json["url"] === null) {
@@ -87,7 +87,6 @@ if (params.get("registered") !== null) {
     const error = errors[params.get("err")] + params.get("msg")
     onError(error).then()
   }
-}
-if (params.get("msg") !== null) {
+} else if (params.get("msg") !== null) {
   onError(params.get("msg")).then()
 }

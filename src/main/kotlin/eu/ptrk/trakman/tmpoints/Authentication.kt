@@ -43,7 +43,8 @@ import javax.crypto.spec.SecretKeySpec
 class SecurityConfig(
     private val tokenService: TokenService,
     private val serverRepository: ServerRepository,
-    private val adminRepository: AdminRepository
+    private val adminRepository: AdminRepository,
+    @Value("\${spring.application.url}") private val hostUrl: String
 ) {
 
     @Bean
@@ -94,7 +95,7 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
-        configuration.allowedOrigins = listOf("http://localhost")
+        configuration.allowedOrigins = listOf("http://localhost", hostUrl)
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE")
         configuration.allowedHeaders = listOf("authorization", "content-type")
 

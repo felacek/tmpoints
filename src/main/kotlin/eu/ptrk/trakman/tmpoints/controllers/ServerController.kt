@@ -40,14 +40,14 @@ class ServerController(
     private val authorizeUrl = "https://ws.trackmania.com/oauth2/authorize/"
     private val tokenUrl = "https://ws.trackmania.com/oauth2/token/"
 
-    @GetMapping(path = ["", "/"])
+    @GetMapping
     fun homePage(model: Model): String {
         return "homepage"
     }
 
     @GetMapping("/foobar")
     fun foobar(): ResponseEntity<TokenResponse> {
-        return ResponseEntity.ok(TokenResponse("fak u"))
+        return ResponseEntity.ok(TokenResponse("fak u", "https://en.wikipedia.org/wiki/Trollface"))
     }
 
     @GetMapping("/register")
@@ -55,6 +55,7 @@ class ServerController(
         return "register"
     }
 
+    @CrossOrigin
     @PostMapping("/register")
     suspend fun getTMLogin(@RequestBody request: ServerRegisterRequest): ResponseEntity<TokenResponse> {
         val state = UUID.randomUUID().toString().take(20)

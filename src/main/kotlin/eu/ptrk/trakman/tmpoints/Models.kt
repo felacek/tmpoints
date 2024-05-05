@@ -9,6 +9,7 @@ data class AddQuestRequest(
     val goal: Int,
     val reward: Int,
     val minPoints: Int,
+    val amount: Int,
     val server: String? = null
 )
 

@@ -26,7 +26,7 @@ class AdminController(
     private val serverService: ServerService,
 ) {
 
-    @GetMapping(path = ["", "/"])
+    @GetMapping
     fun loginPage(authentication: Authentication?, model: Model): String {
         if (authentication == null || !authentication.isAuthenticated ||
             !authentication.authorities.mapNotNull {it.authority}.contains("ADMIN")) return "adminlogin"
@@ -71,12 +71,6 @@ class AdminController(
             throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.message)
         }
     }
-
-    /*@GetMapping("/")
-    fun adminPage(model: Model): String {
-        model["title"] = "Admin page"
-        return "admin"
-    }*/
 
     @GetMapping("/quest/{id}")
     @PreAuthorize("hasRole('ADMIN')")
